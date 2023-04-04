@@ -1,3 +1,4 @@
+import 'package:coindiary_flutter/presentation/diary/diary_write_viewcontroller.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -13,7 +14,7 @@ class DiaryViewController extends StatelessWidget {
       child: Container(
         child: Column(
           children: [
-            RenderMenuList(),
+            renderMenuList(),
             SizedBox(height: 20,),
             Expanded(
               child: Stack(
@@ -21,7 +22,7 @@ class DiaryViewController extends StatelessWidget {
                   Container(
                     color: Colors.red,
                   ),
-                  RenderMenuBtn(context),
+                  renderMenuBtn(context),
                 ],
               ),
             ),
@@ -31,7 +32,7 @@ class DiaryViewController extends StatelessWidget {
     );
   }
 
-  Widget RenderMenuList() {
+  Widget renderMenuList() {
     return Padding(
       padding: EdgeInsets.only(top: 20),
       child: Row(
@@ -42,7 +43,7 @@ class DiaryViewController extends StatelessWidget {
     );
   }
 
-  Widget RenderMenuBtn(BuildContext context) {
+  Widget renderMenuBtn(BuildContext context) {
     return Positioned(
       bottom: 20,
       right: 10,
@@ -67,25 +68,22 @@ class DiaryViewController extends StatelessWidget {
   void _showAlertDialog(BuildContext context) {
     showCupertinoModalPopup<void>(
       context: context,
-      builder: (BuildContext context) => CupertinoAlertDialog(
-        insetAnimationCurve: Curves.bounceOut,
-        insetAnimationDuration: const Duration(milliseconds: 300),
-        content: const Text('메뉴를 선택해 주세요.'),
+      builder: (BuildContext context) => CupertinoActionSheet(
+        message: const Text('메뉴를 선택해 주세요.'),
         actions: <CupertinoDialogAction>[
           CupertinoDialogAction(
-            /// This parameter indicates this action is the default,
-            /// and turns the action's text to bold text.
             isDefaultAction: true,
             onPressed: () {
               Navigator.pop(context);
-              print('no click');
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => DiaryWriteViewController(),
+                ),
+              );
             },
             child: const Text('일지 작성'),
           ),
           CupertinoDialogAction(
-            /// This parameter indicates the action would perform
-            /// a destructive action such as deletion, and turns
-            /// the action's text color to red.
             isDestructiveAction: true,
             onPressed: () {
               Navigator.pop(context);
@@ -94,6 +92,12 @@ class DiaryViewController extends StatelessWidget {
             child: const Text('기록 초기화'),
           ),
         ],
+        cancelButton: CupertinoActionSheetAction(
+          child: Text('취소'),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
     );
   }
@@ -105,24 +109,17 @@ class DiaryViewController extends StatelessWidget {
         content: const Text('기록을 초기화 하시겠습니까?'),
         actions: <CupertinoDialogAction>[
           CupertinoDialogAction(
-            /// This parameter indicates this action is the default,
-            /// and turns the action's text to bold text.
-            isDefaultAction: true,
             onPressed: () {
               Navigator.pop(context);
-              print('no click');
-            },
-            child: const Text('확인'),
-          ),
-          CupertinoDialogAction(
-            /// This parameter indicates the action would perform
-            /// a destructive action such as deletion, and turns
-            /// the action's text color to red.
-            onPressed: () {
-              Navigator.pop(context);
-              print('yes click');
             },
             child: const Text('취소'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('확인'),
           ),
         ],
       ),
