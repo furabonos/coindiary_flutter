@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "268986426510",
+    "project_id": "fcoindiary",
+    "storage_bucket": "fcoindiary.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:268986426510:android:4c2245da33d42af3b4d5df",
+        "android_client_info": {
+          "package_name": "com.example.coindiary_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "268986426510-56ngrllunmvulf2h6i9qru5a6tsbt414.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCH7tE12iYoa3WUDMe9cUthBleWtpi869Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "268986426510-56ngrllunmvulf2h6i9qru5a6tsbt414.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

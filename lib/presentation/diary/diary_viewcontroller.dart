@@ -1,12 +1,26 @@
 import 'package:coindiary_flutter/presentation/diary/diary_write_viewcontroller.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class DiaryViewController extends StatelessWidget {
+class DiaryViewController extends StatefulWidget {
 
-  final List<String> menuList = ["날짜", "시작금액", "종료금액", "수익률", "메모"];
 
   DiaryViewController({Key? key}) : super(key: key);
+
+  @override
+  State<DiaryViewController> createState() => _DiaryViewControllerState();
+}
+
+class _DiaryViewControllerState extends State<DiaryViewController> {
+  final List<String> menuList = ["날짜", "시작금액", "종료금액", "수익률", "메모"];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getDeviceUUID();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +44,12 @@ class DiaryViewController extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  getDeviceUUID() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? aa = prefs.getString("UUID");
+    print("aaasss :: ${aa}");
   }
 
   Widget renderMenuList() {

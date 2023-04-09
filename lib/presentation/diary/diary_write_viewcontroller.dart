@@ -1,12 +1,31 @@
+import 'package:coindiary_flutter/presentation/util/protocol/alertable.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 
-class DiaryWriteViewController extends StatelessWidget {
+class DiaryWriteViewController extends StatefulWidget {
 
-  TextEditingController controller = TextEditingController(text: DateFormat('yyMMdd').format(DateTime.now()));
 
   DiaryWriteViewController({Key? key}) : super(key: key);
+
+  @override
+  State<DiaryWriteViewController> createState() => _DiaryWriteViewControllerState();
+}
+
+class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
+
+  TextEditingController controller = TextEditingController(text: DateFormat('yyMMdd').format(DateTime.now()));
+  final _startTextFieldController = TextEditingController();
+  final _endTextFieldController = TextEditingController();
+  final _memoTextFieldController = TextEditingController();
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    [_startTextFieldController, _endTextFieldController, _memoTextFieldController].map((e) => e.dispose());
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,12 +47,49 @@ class DiaryWriteViewController extends StatelessWidget {
                   renderEndView(),
                   SizedBox(height: 20),
                   renderMemoView(),
+                  SizedBox(height: 100),
+                  renderButtonRow(),
                 ],
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  void clickConfirm(BuildContext context) {
+    final start = _startTextFieldController.text;
+    final end = _endTextFieldController.text;
+    final memo = _memoTextFieldController.text;
+
+    if (start == "") {
+      Alertable.showAlert(context, "시작금액");
+      return;
+    }
+
+    if (end == "") {
+      Alertable.showAlert(context, "종료금액");
+      return;
+    }
+  }
+
+  void saveData(String start, String end, String? memo) {
+
+  }
+
+  void clickCancel(BuildContext context) {
+    Navigator.pop(context);
+  }
+
+  Widget renderButtonRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        ElevatedButton(onPressed: () {}, child: Icon(Icons.image)),
+        ElevatedButton(onPressed: () { clickCancel(context); }, child: Text("취소")),
+        ElevatedButton(onPressed: () { clickConfirm(context); }, child: Text("확인")),
+      ],
     );
   }
 
@@ -63,6 +119,7 @@ class DiaryWriteViewController extends StatelessWidget {
       ],
     );
   }
+
   Widget renderStartView() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,6 +133,7 @@ class DiaryWriteViewController extends StatelessWidget {
         SizedBox(height: 10,),
         Container(
           child: TextField(
+            controller: _startTextFieldController,
             decoration: InputDecoration(
                 contentPadding: EdgeInsets.fromLTRB(20, 5, 0, 5),
                 hintText: "시작금액을 입력해주세요.",
@@ -102,6 +160,7 @@ class DiaryWriteViewController extends StatelessWidget {
         SizedBox(height: 10,),
         Container(
           child: TextField(
+            controller: _endTextFieldController,
             decoration: InputDecoration(
                 contentPadding: EdgeInsets.fromLTRB(20, 5, 0, 5),
                 hintText: "종료금액을 입력해주세요.",
@@ -128,6 +187,7 @@ class DiaryWriteViewController extends StatelessWidget {
         SizedBox(height: 10,),
         Container(
           child: TextField(
+            controller: _memoTextFieldController,
             maxLines: null,
             keyboardType: TextInputType.multiline,
             decoration: InputDecoration(
@@ -141,6 +201,4 @@ class DiaryWriteViewController extends StatelessWidget {
       ],
     );
   }
-
-
 }

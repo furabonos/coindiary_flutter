@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:coindiary_flutter/presentation/base/tabs_info.dart';
 import 'package:coindiary_flutter/presentation/chart/chart_viewcontroller.dart';
 import 'package:coindiary_flutter/presentation/diary/diary_viewcontroller.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MainTabbarView extends StatefulWidget {
   const MainTabbarView({Key? key}) : super(key: key);
@@ -23,6 +28,31 @@ class _MainTabbarViewState extends State<MainTabbarView> with TickerProviderStat
 
       });
     });
+    getDeviceUniqueId();
+  }
+
+  Future<String> getDeviceUniqueId() async {
+    var deviceIdentifier = 'unknown';
+    var deviceInfo = DeviceInfoPlugin();
+
+    if (Platform.isAndroid) {
+      var androidInfo = await deviceInfo.androidInfo;
+      deviceIdentifier = androidInfo.id!;
+    } else if (Platform.isIOS) {
+      var iosInfo = await deviceInfo.iosInfo;
+      deviceIdentifier = iosInfo.identifierForVendor!;
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('UUID', deviceIdentifier);
+    } else if (Platform.isLinux) {
+      var linuxInfo = await deviceInfo.linuxInfo;
+      deviceIdentifier = linuxInfo.machineId!;
+    } else if (kIsWeb) {
+      var webInfo = await deviceInfo.webBrowserInfo;
+      deviceIdentifier = webInfo.vendor! +
+          webInfo.userAgent! +
+          webInfo.hardwareConcurrency.toString();
+    }
+    return deviceIdentifier;
   }
 
   @override
