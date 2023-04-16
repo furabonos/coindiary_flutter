@@ -38,6 +38,8 @@ class _MainTabbarViewState extends State<MainTabbarView> with TickerProviderStat
     if (Platform.isAndroid) {
       var androidInfo = await deviceInfo.androidInfo;
       deviceIdentifier = androidInfo.id!;
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('UUID', deviceIdentifier);
     } else if (Platform.isIOS) {
       var iosInfo = await deviceInfo.iosInfo;
       deviceIdentifier = iosInfo.identifierForVendor!;

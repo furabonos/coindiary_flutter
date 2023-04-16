@@ -1,4 +1,5 @@
 import 'package:coindiary_flutter/presentation/diary/diary_write_viewcontroller.dart';
+import 'package:coindiary_flutter/presentation/util/protocol/string_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,7 +20,8 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    getDeviceUUID();
+    // getDeviceUUID();
+    // print("devideUUIDS :: ${StringUtils.getDevideUUID()}");
   }
 
   @override

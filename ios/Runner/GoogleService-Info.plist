@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>268986426510-o4k66vdhd0f1tb58eac0hp5fptp66uvm.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.268986426510-o4k66vdhd0f1tb58eac0hp5fptp66uvm</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBMfOIHKA1xCkxajqw8vDZJlJUnurNMyFE</string>
+	<key>GCM_SENDER_ID</key>
+	<string>268986426510</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.coindiaryFlutter</string>
+	<key>PROJECT_ID</key>
+	<string>fcoindiary</string>
+	<key>STORAGE_BUCKET</key>
+	<string>fcoindiary.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:268986426510:ios:5aac6da96dbb8d1db4d5df</string>
+	<key>DATABASE_URL</key>
+	<string>https://fcoindiary-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>

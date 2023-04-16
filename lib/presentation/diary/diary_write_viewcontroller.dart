@@ -1,11 +1,14 @@
 import 'package:coindiary_flutter/presentation/util/protocol/alertable.dart';
+import 'package:coindiary_flutter/presentation/util/protocol/string_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
+typedef AlertAction = void Function(BuildContext);
 
 class DiaryWriteViewController extends StatefulWidget {
-
 
   DiaryWriteViewController({Key? key}) : super(key: key);
 
@@ -72,10 +75,25 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
       Alertable.showAlert(context, "종료금액");
       return;
     }
+
+    saveData(start, end, memo, context);
   }
 
-  void saveData(String start, String end, String? memo) {
-
+  void saveData(String start, String end, String? memo, BuildContext context) async{
+    try {
+      await FirebaseFirestore.instance.collection(StringUtils.getDevideUUID().toString())
+          .doc(controller.text)
+          .set({
+        "start": start,
+        "end": end,
+        "today": controller.text,
+        "memo": memo
+      });
+      Alertable.showDataSuccess(context, clickCancel);
+    } catch (e) {
+      Alertable.showDataFailure(context);
+      print('FireStore에 데이터를 추가하는중 오류발생 :: ${e}');
+    }
   }
 
   void clickCancel(BuildContext context) {
