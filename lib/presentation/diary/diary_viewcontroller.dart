@@ -1,4 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:coindiary_flutter/model/model.dart';
+import 'package:coindiary_flutter/presentation/diary/custom/diary_list_cell.dart';
+import 'package:coindiary_flutter/presentation/diary/diary_edit_viewcontroller.dart';
 import 'package:coindiary_flutter/presentation/diary/diary_write_viewcontroller.dart';
+import 'package:coindiary_flutter/presentation/util/protocol/calculation.dart';
 import 'package:coindiary_flutter/presentation/util/protocol/string_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -15,13 +20,13 @@ class DiaryViewController extends StatefulWidget {
 
 class _DiaryViewControllerState extends State<DiaryViewController> {
   final List<String> menuList = ["날짜", "시작금액", "종료금액", "수익률", "메모"];
+  List<DiaryModel> dataList = [];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    // getDeviceUUID();
-    // print("devideUUIDS :: ${StringUtils.getDevideUUID()}");
+    print("fdfdsfds :: ${Calculation.yieldCalculation("100", "50")}");
   }
 
   @override
@@ -31,13 +36,51 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
         child: Column(
           children: [
             renderMenuList(),
-            SizedBox(height: 20,),
+            SizedBox(height: 10,),
             Expanded(
               child: Stack(
                 children: [
-                  Container(
-                    color: Colors.red,
-                  ),
+              FutureBuilder<List<DiaryModel>>(
+              future: fetchData(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Scaffold(
+                    body: Center(
+                      child: Text('에러있'),
+                    ),
+                  );
+                }
+
+                if (!snapshot.hasData) {
+                  //로딩
+                  return Scaffold(
+                    body: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  itemCount: snapshot.data!.length,
+                    itemBuilder:(context, index) {
+                    return GestureDetector(
+                      onTap: () async {
+                        final result = await Navigator.of(context).push(
+                            MaterialPageRoute(builder: (BuildContext context) => DiaryEditViewController(modelData: snapshot.data![index]),
+                            )
+                        );
+                        print(result);
+                        // Navigator.of(context).push(
+                        //   MaterialPageRoute(
+                        //     builder: (_) => DiaryEditViewController(data: snapshot.data![index]),
+                        //   ),
+                        // );
+                      },
+                        child: DiaryListCell(data: snapshot.data![index])
+                    );
+                    });
+              },
+            ),
                   renderMenuBtn(context),
                 ],
               ),
@@ -48,21 +91,29 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
     );
   }
 
-  getDeviceUUID() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? aa = prefs.getString("UUID");
-    print("aaasss :: ${aa}");
-  }
-
   Widget renderMenuList() {
+    double width = MediaQuery.of(context).size.width / 5;
     return Padding(
       padding: EdgeInsets.only(top: 20),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children:
-        menuList.map((e) => Text(e)).toList(),
+        menuList.map((e) => Container(width: width, child: Text(e, textAlign: TextAlign.center))).toList(),
       ),
     );
+  }
+
+  Future<List<DiaryModel>> fetchData() async {
+    String uuids = await StringUtils.getDevideUUID();
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final QuerySnapshot snapshot = await firestore.collection(uuids).orderBy('today', descending: true).get();
+
+    List<DiaryModel> list = snapshot.docs.map((e) =>
+        DiaryModel.fromFirestore(doc: e)
+    ).toList();
+    setState(() {
+      dataList = list;
+    });
+    return dataList;
   }
 
   Widget renderMenuBtn(BuildContext context) {

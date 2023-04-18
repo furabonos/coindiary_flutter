@@ -28,7 +28,7 @@ class _MainTabbarViewState extends State<MainTabbarView> with TickerProviderStat
 
       });
     });
-    getDeviceUniqueId();
+    // getDeviceUniqueId();
   }
 
   Future<String> getDeviceUniqueId() async {

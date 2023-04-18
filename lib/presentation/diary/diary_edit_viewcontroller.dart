@@ -1,39 +1,34 @@
-import 'package:coindiary_flutter/presentation/util/protocol/alertable.dart';
-import 'package:coindiary_flutter/presentation/util/protocol/string_utils.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-typedef AlertAction = void Function(BuildContext);
+import '../../model/model.dart';
+import '../util/protocol/alertable.dart';
+import '../util/protocol/string_utils.dart';
 
-class DiaryWriteViewController extends StatefulWidget {
-
-  DiaryWriteViewController({Key? key}) : super(key: key);
+class DiaryEditViewController extends StatefulWidget {
+  final DiaryModel modelData;
+  const DiaryEditViewController({required this.modelData, Key? key}) : super(key: key);
 
   @override
-  State<DiaryWriteViewController> createState() => _DiaryWriteViewControllerState();
+  State<DiaryEditViewController> createState() => _DiaryEditViewControllerState();
 }
 
-class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
+class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
 
-  TextEditingController controller = TextEditingController(text: DateFormat('yyMMdd').format(DateTime.now()));
+  final _todayTextFieldController = TextEditingController();
   final _startTextFieldController = TextEditingController();
   final _endTextFieldController = TextEditingController();
   final _memoTextFieldController = TextEditingController();
   bool _isLoading = false;
 
   @override
-  void dispose() {
-    // TODO: implement dispose
-    [_startTextFieldController, _endTextFieldController, _memoTextFieldController].map((e) => e.dispose());
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    _todayTextFieldController.text = "${widget.modelData.today}";
+    _startTextFieldController.text = "${widget.modelData.start}";
+    _endTextFieldController.text = "${widget.modelData.end}";
+    _memoTextFieldController.text = "${widget.modelData.memo}";
+
     return Scaffold(
       body: WillPopScope(
         onWillPop: () async{
@@ -81,26 +76,19 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
     saveData(start, end, memo, context);
   }
 
-  void saveData(String start, String end, String? memo, BuildContext context) async{
-    String uuids = await StringUtils.getDevideUUID();
-    try {
-      await FirebaseFirestore.instance.collection(uuids)
-          .doc(controller.text)
-          .set({
-        "start": start,
-        "end": end,
-        "today": controller.text,
-        "memo": memo
-      });
-      showSuccessAlert(context);
-    } catch (e) {
-      Alertable.showDataFailure(context);
-      print('FireStore에 데이터를 추가하는중 오류발생 :: ${e}');
-    }
-  }
-
-  void clickCancel(BuildContext context) {
-    Navigator.pop(context);
+  void _showIndicator(BuildContext context) {
+    setState(() {
+      _isLoading = true;
+    });
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
   }
 
   void showSuccessAlert(BuildContext context) {
@@ -124,19 +112,26 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
     );
   }
 
-  void _showIndicator(BuildContext context) {
-    setState(() {
-      _isLoading = true;
-    });
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Center(
-          child: CircularProgressIndicator(),
-        );
-      },
-    );
+  void saveData(String start, String end, String? memo, BuildContext context) async{
+    String uuids = await StringUtils.getDevideUUID();
+    try {
+      await FirebaseFirestore.instance.collection(uuids)
+          .doc(_memoTextFieldController.text)
+          .set({
+        "start": start,
+        "end": end,
+        "today": _memoTextFieldController.text,
+        "memo": memo
+      });
+      showSuccessAlert(context);
+    } catch (e) {
+      Alertable.showDataFailure(context);
+      print('FireStore에 데이터를 추가하는중 오류발생 :: ${e}');
+    }
+  }
+
+  void clickCancel(BuildContext context) {
+    Navigator.pop(context);
   }
 
   Widget renderButtonRow() {
@@ -145,17 +140,17 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
       children: [
         ElevatedButton(onPressed: () {}, child: Icon(Icons.image)),
         ElevatedButton(onPressed: () { clickCancel(context); }, child: Text("취소")),
-        ElevatedButton(onPressed: () { clickConfirm(context); }, child: Text("확인")),
+        ElevatedButton(onPressed: () { clickConfirm(context); }, child: Text("수정")),
       ],
     );
   }
 
-  Widget renderDateView() {
+  Widget renderMemoView() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '기록일',
+          '메모',
           style: TextStyle(
             fontSize: 18,
           ),
@@ -163,37 +158,11 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
         SizedBox(height: 10,),
         Container(
           child: TextField(
-            controller: controller,
-            enabled: false,
+            controller: _memoTextFieldController,
+            maxLines: null,
+            keyboardType: TextInputType.multiline,
             decoration: InputDecoration(
-                contentPadding: EdgeInsets.fromLTRB(20, 5, 0, 5),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                )
-            ),
-          ),
-        )
-      ],
-    );
-  }
-
-  Widget renderStartView() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '시작시드',
-          style: TextStyle(
-            fontSize: 18,
-          ),
-        ),
-        SizedBox(height: 10,),
-        Container(
-          child: TextField(
-            controller: _startTextFieldController,
-            decoration: InputDecoration(
-                contentPadding: EdgeInsets.fromLTRB(20, 5, 0, 5),
-                hintText: "시작금액을 입력해주세요.",
+                contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 10),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 )
@@ -231,12 +200,12 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
     );
   }
 
-  Widget renderMemoView() {
+  Widget renderStartView() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '메모',
+          '시작시드',
           style: TextStyle(
             fontSize: 18,
           ),
@@ -244,11 +213,37 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
         SizedBox(height: 10,),
         Container(
           child: TextField(
-            controller: _memoTextFieldController,
-            maxLines: null,
-            keyboardType: TextInputType.multiline,
+            controller: _startTextFieldController,
             decoration: InputDecoration(
-                contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                contentPadding: EdgeInsets.fromLTRB(20, 5, 0, 5),
+                hintText: "시작금액을 입력해주세요.",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                )
+            ),
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget renderDateView() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '기록일',
+          style: TextStyle(
+            fontSize: 18,
+          ),
+        ),
+        SizedBox(height: 10,),
+        Container(
+          child: TextField(
+            controller: _todayTextFieldController,
+            enabled: false,
+            decoration: InputDecoration(
+                contentPadding: EdgeInsets.fromLTRB(20, 5, 0, 5),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 )
