@@ -20,13 +20,11 @@ class DiaryViewController extends StatefulWidget {
 
 class _DiaryViewControllerState extends State<DiaryViewController> {
   final List<String> menuList = ["날짜", "시작금액", "종료금액", "수익률", "메모"];
-  List<DiaryModel> dataList = [];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    print("fdfdsfds :: ${Calculation.yieldCalculation("100", "50")}");
   }
 
   @override
@@ -46,7 +44,7 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
                 if (snapshot.hasError) {
                   return Scaffold(
                     body: Center(
-                      child: Text('에러있'),
+                      child: Text('에러있음'),
                     ),
                   );
                 }
@@ -110,10 +108,7 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
     List<DiaryModel> list = snapshot.docs.map((e) =>
         DiaryModel.fromFirestore(doc: e)
     ).toList();
-    setState(() {
-      dataList = list;
-    });
-    return dataList;
+    return list;
   }
 
   Widget renderMenuBtn(BuildContext context) {

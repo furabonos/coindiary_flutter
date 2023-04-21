@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:coindiary_flutter/presentation/base/tabs_info.dart';
 import 'package:coindiary_flutter/presentation/chart/chart_viewcontroller.dart';
+import 'package:coindiary_flutter/presentation/chart/viewmodel/chart_viewmodel.dart';
 import 'package:coindiary_flutter/presentation/diary/diary_viewcontroller.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MainTabbarView extends StatefulWidget {
@@ -61,10 +63,16 @@ class _MainTabbarViewState extends State<MainTabbarView> with TickerProviderStat
   Widget build(BuildContext context) {
     return Scaffold(
       body: TabBarView(
+        physics: NeverScrollableScrollPhysics(),
         controller: controller,
         children: [
           DiaryViewController(),
-          ChartViewController(),
+          MultiProvider(providers: [
+            ChangeNotifierProvider(create: (_) => ChartViewModel()),
+          ],
+            child: ChartViewController(),
+          ),
+          // ChartViewController(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
