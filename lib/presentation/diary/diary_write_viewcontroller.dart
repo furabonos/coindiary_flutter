@@ -1,3 +1,4 @@
+import 'package:coindiary_flutter/presentation/diary/viewmodel/diary_write_viewmodel.dart';
 import 'package:coindiary_flutter/presentation/util/protocol/alertable.dart';
 import 'package:coindiary_flutter/presentation/util/protocol/string_utils.dart';
 import 'package:flutter/cupertino.dart';
@@ -6,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 
 typedef AlertAction = void Function(BuildContext);
 
@@ -19,7 +21,7 @@ class DiaryWriteViewController extends StatefulWidget {
 
 class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
 
-  TextEditingController controller = TextEditingController(text: DateFormat('yyMMdd').format(DateTime.now()));
+  TextEditingController _todayTextFieldController = TextEditingController(text: DateFormat('yyMMdd').format(DateTime.now()));
   final _startTextFieldController = TextEditingController();
   final _endTextFieldController = TextEditingController();
   final _memoTextFieldController = TextEditingController();
@@ -34,6 +36,7 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
 
   @override
   Widget build(BuildContext context) {
+    var viewModel = context.watch<DiaryWriteViewModel>();
     return Scaffold(
       body: WillPopScope(
         onWillPop: () async{
@@ -43,18 +46,20 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
           child: Container(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              child: Column(
-                children: [
-                  renderDateView(),
-                  SizedBox(height: 20),
-                  renderStartView(),
-                  SizedBox(height: 20),
-                  renderEndView(),
-                  SizedBox(height: 20),
-                  renderMemoView(),
-                  SizedBox(height: 100),
-                  renderButtonRow(),
-                ],
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    renderDateView(),
+                    SizedBox(height: 20),
+                    renderStartView(),
+                    SizedBox(height: 20),
+                    renderEndView(),
+                    SizedBox(height: 20),
+                    renderMemoView(),
+                    SizedBox(height: 100),
+                    renderButtonRow(viewModel),
+                  ],
+                ),
               ),
             ),
           ),
@@ -63,10 +68,11 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
     );
   }
 
-  void clickConfirm(BuildContext context) {
+  Future<void> clickConfirm(BuildContext context, DiaryWriteViewModel viewModel) async {
     final start = _startTextFieldController.text;
     final end = _endTextFieldController.text;
     final memo = _memoTextFieldController.text;
+    final today = _todayTextFieldController.text;
 
     if (start == "") {
       Alertable.showAlert(context, "시작금액");
@@ -78,18 +84,24 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
       return;
     }
     _showIndicator(context);
-    saveData(start, end, memo, context);
+    // saveData(start, end, memo, context);
+    // final aa = await viewModel.saveData(start, end, memo, today, context);
+    if (await viewModel.saveData(start, end, memo, today, context)) {
+      showSuccessAlert(context);
+    }else {
+      Alertable.showDataFailure(context);
+    }
   }
 
   void saveData(String start, String end, String? memo, BuildContext context) async{
     String uuids = await StringUtils.getDevideUUID();
     try {
       await FirebaseFirestore.instance.collection(uuids)
-          .doc(controller.text)
+          .doc(_todayTextFieldController.text)
           .set({
         "start": start,
         "end": end,
-        "today": controller.text,
+        "today": _todayTextFieldController.text,
         "memo": memo
       });
       showSuccessAlert(context);
@@ -139,13 +151,13 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
     );
   }
 
-  Widget renderButtonRow() {
+  Widget renderButtonRow(DiaryWriteViewModel viewmodel) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         ElevatedButton(onPressed: () {}, child: Icon(Icons.image)),
         ElevatedButton(onPressed: () { clickCancel(context); }, child: Text("취소")),
-        ElevatedButton(onPressed: () { clickConfirm(context); }, child: Text("확인")),
+        ElevatedButton(onPressed: () { clickConfirm(context, viewmodel); }, child: Text("확인")),
       ],
     );
   }
@@ -163,7 +175,7 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
         SizedBox(height: 10,),
         Container(
           child: TextField(
-            controller: controller,
+            controller: _todayTextFieldController,
             enabled: false,
             decoration: InputDecoration(
                 contentPadding: EdgeInsets.fromLTRB(20, 5, 0, 5),

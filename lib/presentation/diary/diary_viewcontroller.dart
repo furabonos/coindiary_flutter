@@ -3,15 +3,16 @@ import 'package:coindiary_flutter/model/model.dart';
 import 'package:coindiary_flutter/presentation/diary/custom/diary_list_cell.dart';
 import 'package:coindiary_flutter/presentation/diary/diary_edit_viewcontroller.dart';
 import 'package:coindiary_flutter/presentation/diary/diary_write_viewcontroller.dart';
+import 'package:coindiary_flutter/presentation/diary/viewmodel/diary_viewmodel.dart';
+import 'package:coindiary_flutter/presentation/diary/viewmodel/diary_write_viewmodel.dart';
 import 'package:coindiary_flutter/presentation/util/protocol/calculation.dart';
 import 'package:coindiary_flutter/presentation/util/protocol/string_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DiaryViewController extends StatefulWidget {
-
-
   DiaryViewController({Key? key}) : super(key: key);
 
   @override
@@ -20,15 +21,26 @@ class DiaryViewController extends StatefulWidget {
 
 class _DiaryViewControllerState extends State<DiaryViewController> {
   final List<String> menuList = ["날짜", "시작금액", "종료금액", "수익률", "메모"];
+  late SharedPreferences prefs;
+  String uuids = '';
 
   @override
-  void initState() {
+  initState() {
     // TODO: implement initState
     super.initState();
+    loadSharedPreferences();
+  }
+
+  void loadSharedPreferences() async {
+    prefs = await SharedPreferences.getInstance();
+    setState(() {
+      uuids = prefs.getString('UUID') ?? '';
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    var viewModel = context.watch<DiaryViewModel>();
     return SafeArea(
       child: Container(
         child: Column(
@@ -38,47 +50,7 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
             Expanded(
               child: Stack(
                 children: [
-              FutureBuilder<List<DiaryModel>>(
-              future: fetchData(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Scaffold(
-                    body: Center(
-                      child: Text('에러있음'),
-                    ),
-                  );
-                }
-
-                if (!snapshot.hasData) {
-                  //로딩
-                  return Scaffold(
-                    body: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  itemCount: snapshot.data!.length,
-                    itemBuilder:(context, index) {
-                    return GestureDetector(
-                      onTap: () async {
-                        final result = await Navigator.of(context).push(
-                            MaterialPageRoute(builder: (BuildContext context) => DiaryEditViewController(modelData: snapshot.data![index]),
-                            )
-                        );
-                        print(result);
-                        // Navigator.of(context).push(
-                        //   MaterialPageRoute(
-                        //     builder: (_) => DiaryEditViewController(data: snapshot.data![index]),
-                        //   ),
-                        // );
-                      },
-                        child: DiaryListCell(data: snapshot.data![index])
-                    );
-                    });
-              },
-            ),
+                  renderStreamBuilder(viewModel),
                   renderMenuBtn(context),
                 ],
               ),
@@ -86,6 +58,80 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
           ],
         ),
       ),
+    );
+  }
+
+  StreamBuilder<QuerySnapshot> renderStreamBuilder(DiaryViewModel viewModel) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: viewModel.streamFetchData(uuids),
+      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.hasData) {
+          List<DiaryModel> diaryList =
+          snapshot.data!.docs.map((e) => DiaryModel.fromFirestore(doc: e)).toList();
+          return ListView.builder(
+              itemCount: diaryList.length,
+              itemBuilder:(context, index) {
+                return GestureDetector(
+                    onTap: () async {
+                      final result = await Navigator.of(context).push(
+                          MaterialPageRoute(builder: (BuildContext context) =>
+                              DiaryEditViewController(modelData: diaryList[index]),
+                          )
+                      );
+                    },
+                    child: DiaryListCell(data: diaryList[index])
+                );
+              });
+        }else {
+          //data null
+          return Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+      },
+
+    );
+  }
+
+  FutureBuilder<List<DiaryModel>> renderFutureBuilder(DiaryViewModel viewModel) {
+    return FutureBuilder<List<DiaryModel>>(
+      future: viewModel.fetchData(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          print("errors :: ${snapshot.error}");
+          return Scaffold(
+            body: Center(
+              child: Text('에러있음'),
+            ),
+          );
+        }
+
+        if (!snapshot.hasData) {
+          //로딩
+          return Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        return ListView.builder(
+            itemCount: snapshot.data!.length,
+            itemBuilder:(context, index) {
+              return GestureDetector(
+                  onTap: () async {
+                    final result = await Navigator.of(context).push(
+                        MaterialPageRoute(builder: (BuildContext context) =>
+                            DiaryEditViewController(modelData: snapshot.data![index]),
+                        )
+                    );
+                  },
+                  child: DiaryListCell(data: snapshot.data![index])
+              );
+            });
+      },
     );
   }
 
@@ -98,17 +144,6 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
         menuList.map((e) => Container(width: width, child: Text(e, textAlign: TextAlign.center))).toList(),
       ),
     );
-  }
-
-  Future<List<DiaryModel>> fetchData() async {
-    String uuids = await StringUtils.getDevideUUID();
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final QuerySnapshot snapshot = await firestore.collection(uuids).orderBy('today', descending: true).get();
-
-    List<DiaryModel> list = snapshot.docs.map((e) =>
-        DiaryModel.fromFirestore(doc: e)
-    ).toList();
-    return list;
   }
 
   Widget renderMenuBtn(BuildContext context) {
@@ -145,7 +180,9 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
               Navigator.pop(context);
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => DiaryWriteViewController(),
+                  builder: (_) =>
+                      // DiaryWriteViewController(),
+                  ChangeNotifierProvider<DiaryWriteViewModel>(create: (context) => DiaryWriteViewModel(), child: DiaryWriteViewController()),
                 ),
               );
             },

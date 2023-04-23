@@ -7,13 +7,6 @@ import 'package:syncfusion_flutter_charts/sparkcharts.dart';
 import '../../model/model.dart';
 import '../util/protocol/string_utils.dart';
 
-class _SalesData {
-  _SalesData(this.year, this.sales);
-
-  final String year;
-  final double sales;
-}
-
 class ChartViewController extends StatefulWidget {
   ChartViewController({Key? key}) : super(key: key);
 
@@ -40,6 +33,7 @@ class _ChartViewControllerState extends State<ChartViewController> {
       future: viewModel.fetchData(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
+          print("error :: ${snapshot.error}");
           return Scaffold(
             body: Center(
               child: Text('에러있음'),

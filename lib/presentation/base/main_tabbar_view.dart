@@ -4,6 +4,7 @@ import 'package:coindiary_flutter/presentation/base/tabs_info.dart';
 import 'package:coindiary_flutter/presentation/chart/chart_viewcontroller.dart';
 import 'package:coindiary_flutter/presentation/chart/viewmodel/chart_viewmodel.dart';
 import 'package:coindiary_flutter/presentation/diary/diary_viewcontroller.dart';
+import 'package:coindiary_flutter/presentation/diary/viewmodel/diary_viewmodel.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -66,13 +67,8 @@ class _MainTabbarViewState extends State<MainTabbarView> with TickerProviderStat
         physics: NeverScrollableScrollPhysics(),
         controller: controller,
         children: [
-          DiaryViewController(),
-          MultiProvider(providers: [
-            ChangeNotifierProvider(create: (_) => ChartViewModel()),
-          ],
-            child: ChartViewController(),
-          ),
-          // ChartViewController(),
+          ChangeNotifierProvider<DiaryViewModel>(create: (context) => DiaryViewModel(), child: DiaryViewController()),
+          ChangeNotifierProvider<ChartViewModel>(create: (context) => ChartViewModel(), child: ChartViewController()),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
