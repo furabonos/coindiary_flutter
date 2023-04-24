@@ -38,18 +38,20 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
           child: Container(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              child: Column(
-                children: [
-                  renderDateView(),
-                  SizedBox(height: 20),
-                  renderStartView(),
-                  SizedBox(height: 20),
-                  renderEndView(),
-                  SizedBox(height: 20),
-                  renderMemoView(),
-                  SizedBox(height: 100),
-                  renderButtonRow(),
-                ],
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    renderDateView(),
+                    SizedBox(height: 20),
+                    renderStartView(),
+                    SizedBox(height: 20),
+                    renderEndView(),
+                    SizedBox(height: 20),
+                    renderMemoView(),
+                    SizedBox(height: 100),
+                    renderButtonRow(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -213,6 +215,7 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
         SizedBox(height: 10,),
         Container(
           child: TextField(
+            keyboardType: TextInputType.number,
             controller: _startTextFieldController,
             decoration: InputDecoration(
                 contentPadding: EdgeInsets.fromLTRB(20, 5, 0, 5),
@@ -240,6 +243,7 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
         SizedBox(height: 10,),
         Container(
           child: TextField(
+            keyboardType: TextInputType.number,
             controller: _todayTextFieldController,
             enabled: false,
             decoration: InputDecoration(

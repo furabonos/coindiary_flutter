@@ -8,6 +8,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 typedef AlertAction = void Function(BuildContext);
 
@@ -26,6 +27,15 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
   final _endTextFieldController = TextEditingController();
   final _memoTextFieldController = TextEditingController();
   bool _isLoading = false;
+  String seed = "";
+  late SharedPreferences prefs;
+
+  @override
+  initState() {
+    // TODO: implement initState
+    super.initState();
+    loadSharedPreferences();
+  }
 
   @override
   void dispose() {
@@ -34,9 +44,17 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
     super.dispose();
   }
 
+  void loadSharedPreferences() async {
+    prefs = await SharedPreferences.getInstance();
+    setState(() {
+      seed = prefs.getString('SEED') ?? '';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var viewModel = context.watch<DiaryWriteViewModel>();
+    _startTextFieldController.text = seed;
     return Scaffold(
       body: WillPopScope(
         onWillPop: () async{
@@ -87,6 +105,8 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
     // saveData(start, end, memo, context);
     // final aa = await viewModel.saveData(start, end, memo, today, context);
     if (await viewModel.saveData(start, end, memo, today, context)) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('SEED', end);
       showSuccessAlert(context);
     }else {
       Alertable.showDataFailure(context);
@@ -202,6 +222,7 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
         SizedBox(height: 10,),
         Container(
           child: TextField(
+            keyboardType: TextInputType.number,
             controller: _startTextFieldController,
             decoration: InputDecoration(
                 contentPadding: EdgeInsets.fromLTRB(20, 5, 0, 5),
@@ -229,6 +250,7 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
         SizedBox(height: 10,),
         Container(
           child: TextField(
+            keyboardType: TextInputType.number,
             controller: _endTextFieldController,
             decoration: InputDecoration(
                 contentPadding: EdgeInsets.fromLTRB(20, 5, 0, 5),
