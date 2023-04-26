@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../model/model.dart';
 import '../presentation/util/protocol/string_utils.dart';
+import 'dart:convert';
 
 enum SaveDataBool {
   success,
@@ -24,14 +25,15 @@ class DataSource {
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> streamFetchData(String uuids){
-    return FirebaseFirestore.instance.collection(uuids).orderBy('today', descending: true).snapshots();
+    return FirebaseFirestore.instance.collection(StringUtils.encrypt(uuids)).orderBy('today', descending: true).snapshots();
   }
 
   Future<List<DiaryModel>> chartFetchData() async {
     String uuids = await StringUtils.getDevideUUID();
+
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
     final QuerySnapshot snapshot = await firestore
-        .collection(uuids)
+        .collection(StringUtils.encrypt(uuids))
         .orderBy('today', descending: false)
         .get();
 
@@ -43,7 +45,7 @@ class DataSource {
   Future<bool> saveData(String start, String end, String? memo, String today, BuildContext context) async{
     String uuids = await StringUtils.getDevideUUID();
     try {
-      await FirebaseFirestore.instance.collection(uuids)
+      await FirebaseFirestore.instance.collection(StringUtils.encrypt(uuids))
           .doc(today)
           .set({
         "start": start,

@@ -140,7 +140,7 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        ElevatedButton(onPressed: () {}, child: Icon(Icons.image)),
+        // ElevatedButton(onPressed: () {}, child: Icon(Icons.image)),
         ElevatedButton(onPressed: () { clickCancel(context); }, child: Text("취소")),
         ElevatedButton(onPressed: () { clickConfirm(context); }, child: Text("수정")),
       ],

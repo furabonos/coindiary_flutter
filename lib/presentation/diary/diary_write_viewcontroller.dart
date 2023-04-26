@@ -113,24 +113,6 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
     }
   }
 
-  void saveData(String start, String end, String? memo, BuildContext context) async{
-    String uuids = await StringUtils.getDevideUUID();
-    try {
-      await FirebaseFirestore.instance.collection(uuids)
-          .doc(_todayTextFieldController.text)
-          .set({
-        "start": start,
-        "end": end,
-        "today": _todayTextFieldController.text,
-        "memo": memo
-      });
-      showSuccessAlert(context);
-    } catch (e) {
-      Alertable.showDataFailure(context);
-      print('FireStore에 데이터를 추가하는중 오류발생 :: ${e}');
-    }
-  }
-
   void clickCancel(BuildContext context) {
     Navigator.pop(context);
   }
@@ -175,7 +157,7 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        ElevatedButton(onPressed: () {}, child: Icon(Icons.image)),
+        // ElevatedButton(onPressed: () {}, child: Icon(Icons.image)),
         ElevatedButton(onPressed: () { clickCancel(context); }, child: Text("취소")),
         ElevatedButton(onPressed: () { clickConfirm(context, viewmodel); }, child: Text("확인")),
       ],
