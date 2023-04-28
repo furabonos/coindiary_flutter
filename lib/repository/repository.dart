@@ -21,4 +21,8 @@ class Repository {
   Future<bool> saveData(String start, String end, String? memo, String today, BuildContext context) {
     return _dataSource.saveData(start, end, memo, today, context);
   }
+
+  Future<bool> removeAllData() {
+    return _dataSource.removeAllData();
+  }
 }

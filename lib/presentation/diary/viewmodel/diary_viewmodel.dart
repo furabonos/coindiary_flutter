@@ -19,4 +19,8 @@ class DiaryViewModel extends ChangeNotifier {
   Stream<QuerySnapshot<Map<String, dynamic>>>streamFetchData(String uuids) {
     return _repository.streamFetchData(uuids);
   }
+
+  Future<bool> removeAllData() {
+    return _repository.removeAllData();
+  }
 }

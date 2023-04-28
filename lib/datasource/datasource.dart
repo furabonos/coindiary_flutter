@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../model/model.dart';
 import '../presentation/util/protocol/string_utils.dart';
-import 'dart:convert';
 
 enum SaveDataBool {
   success,
@@ -42,7 +41,7 @@ class DataSource {
     return list;
   }
 
-  Future<bool> saveData(String start, String end, String? memo, String today, BuildContext context) async{
+  Future<bool> saveData(String start, String end, String? memo, String today, BuildContext context) async {
     String uuids = await StringUtils.getDevideUUID();
     try {
       await FirebaseFirestore.instance.collection(StringUtils.encrypt(uuids))
@@ -53,6 +52,22 @@ class DataSource {
         "today": today,
         "memo": memo
       });
+      return true;
+    } catch (e) {
+      // Alertable.showDataFailure(context);
+      return false;
+      print('FireStore에 데이터를 추가하는중 오류발생 :: ${e}');
+    }
+  }
+
+  Future<bool> removeAllData() async {
+    String uuids = await StringUtils.getDevideUUID();
+    var collection = FirebaseFirestore.instance.collection(StringUtils.encrypt(uuids));
+    var snapshots = await collection.get();
+    try {
+      for (var doc in snapshots.docs) {
+        await doc.reference.delete();
+      }
       return true;
     } catch (e) {
       // Alertable.showDataFailure(context);

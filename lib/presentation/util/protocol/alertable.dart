@@ -22,6 +22,24 @@ class Alertable {
     );
   }
 
+  static showTitleAlert(BuildContext context, String title) {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        content: Text(title),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            isDestructiveAction: false,
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('확인'),
+          ),
+        ],
+      ),
+    );
+  }
+
   static showDataSuccess(BuildContext context, AlertAction action) {
     showCupertinoModalPopup<void>(
       context: context,

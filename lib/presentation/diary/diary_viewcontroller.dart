@@ -3,8 +3,10 @@ import 'package:coindiary_flutter/model/model.dart';
 import 'package:coindiary_flutter/presentation/diary/custom/diary_list_cell.dart';
 import 'package:coindiary_flutter/presentation/diary/diary_edit_viewcontroller.dart';
 import 'package:coindiary_flutter/presentation/diary/diary_write_viewcontroller.dart';
+import 'package:coindiary_flutter/presentation/diary/viewmodel/diary_edit_viewmodel.dart';
 import 'package:coindiary_flutter/presentation/diary/viewmodel/diary_viewmodel.dart';
 import 'package:coindiary_flutter/presentation/diary/viewmodel/diary_write_viewmodel.dart';
+import 'package:coindiary_flutter/presentation/util/protocol/alertable.dart';
 import 'package:coindiary_flutter/presentation/util/protocol/calculation.dart';
 import 'package:coindiary_flutter/presentation/util/protocol/string_utils.dart';
 import 'package:flutter/cupertino.dart';
@@ -51,7 +53,7 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
               child: Stack(
                 children: [
                   renderStreamBuilder(viewModel),
-                  renderMenuBtn(context),
+                  renderMenuBtn(context, viewModel),
                 ],
               ),
             ),
@@ -75,7 +77,8 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
                     onTap: () async {
                       final result = await Navigator.of(context).push(
                           MaterialPageRoute(builder: (BuildContext context) =>
-                              DiaryEditViewController(modelData: diaryList[index]),
+                              // DiaryEditViewController(modelData: diaryList[index]),
+                            ChangeNotifierProvider<DiaryEditViewModel>(create: (context) => DiaryEditViewModel(), child: DiaryEditViewController(modelData: diaryList[index])),
                           )
                       );
                     },
@@ -95,46 +98,6 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
     );
   }
 
-  FutureBuilder<List<DiaryModel>> renderFutureBuilder(DiaryViewModel viewModel) {
-    return FutureBuilder<List<DiaryModel>>(
-      future: viewModel.fetchData(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          print("errors :: ${snapshot.error}");
-          return Scaffold(
-            body: Center(
-              child: Text('에러있음'),
-            ),
-          );
-        }
-
-        if (!snapshot.hasData) {
-          //로딩
-          return Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-
-        return ListView.builder(
-            itemCount: snapshot.data!.length,
-            itemBuilder:(context, index) {
-              return GestureDetector(
-                  onTap: () async {
-                    final result = await Navigator.of(context).push(
-                        MaterialPageRoute(builder: (BuildContext context) =>
-                            DiaryEditViewController(modelData: snapshot.data![index]),
-                        )
-                    );
-                  },
-                  child: DiaryListCell(data: snapshot.data![index])
-              );
-            });
-      },
-    );
-  }
-
   Widget renderMenuList() {
     double width = MediaQuery.of(context).size.width / 5;
     return Padding(
@@ -146,7 +109,7 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
     );
   }
 
-  Widget renderMenuBtn(BuildContext context) {
+  Widget renderMenuBtn(BuildContext context, DiaryViewModel viewModel) {
     return Positioned(
       bottom: 20,
       right: 10,
@@ -154,7 +117,7 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
       height: 60,
       child: ElevatedButton(
         onPressed: () {
-          _showAlertDialog(context);
+          _showAlertDialog(context, viewModel);
         },
         child: Icon(Icons.menu),
         style: ElevatedButton.styleFrom(
@@ -168,7 +131,7 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
     );
   }
 
-  void _showAlertDialog(BuildContext context) {
+  void _showAlertDialog(BuildContext context, DiaryViewModel viewModel) {
     showCupertinoModalPopup<void>(
       context: context,
       builder: (BuildContext context) => CupertinoActionSheet(
@@ -192,7 +155,7 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
             isDestructiveAction: true,
             onPressed: () {
               Navigator.pop(context);
-              _showDeleteAlert(context);
+              _showDeleteAlert(context, viewModel);
             },
             child: const Text('기록 초기화'),
           ),
@@ -207,7 +170,7 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
     );
   }
 
-  void _showDeleteAlert(BuildContext context) {
+  void _showDeleteAlert(BuildContext context, DiaryViewModel viewModel) {
     showCupertinoModalPopup<void>(
       context: context,
       builder: (BuildContext context) => CupertinoAlertDialog(
@@ -221,8 +184,14 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
+              if (await viewModel.removeAllData()) {
+                //성공?
+                Alertable.showTitleAlert(context, "삭제되었습니다.");
+              }else {
+                //실패
+              }
             },
             child: const Text('확인'),
           ),

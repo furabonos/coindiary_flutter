@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:coindiary_flutter/presentation/diary/viewmodel/diary_edit_viewmodel.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../model/model.dart';
 import '../util/protocol/alertable.dart';
@@ -21,6 +24,22 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
   final _endTextFieldController = TextEditingController();
   final _memoTextFieldController = TextEditingController();
   bool _isLoading = false;
+  String seed = "";
+  late SharedPreferences prefs;
+
+  @override
+  initState() {
+    // TODO: implement initState
+    super.initState();
+    loadSharedPreferences();
+  }
+
+  void loadSharedPreferences() async {
+    prefs = await SharedPreferences.getInstance();
+    setState(() {
+      seed = prefs.getString('SEED') ?? '';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +47,8 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
     _startTextFieldController.text = "${widget.modelData.start}";
     _endTextFieldController.text = "${widget.modelData.end}";
     _memoTextFieldController.text = "${widget.modelData.memo}";
+
+    var viewModel = context.watch<DiaryEditViewModel>();
 
     return Scaffold(
       body: WillPopScope(
@@ -49,7 +70,7 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
                     SizedBox(height: 20),
                     renderMemoView(),
                     SizedBox(height: 100),
-                    renderButtonRow(),
+                    renderButtonRow(viewModel),
                   ],
                 ),
               ),
@@ -60,10 +81,11 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
     );
   }
 
-  void clickConfirm(BuildContext context) {
+  Future<void> clickConfirm(BuildContext context, DiaryEditViewModel viewModel) async {
     final start = _startTextFieldController.text;
     final end = _endTextFieldController.text;
     final memo = _memoTextFieldController.text;
+    final today = _todayTextFieldController.text;
 
     if (start == "") {
       Alertable.showAlert(context, "시작금액");
@@ -75,7 +97,15 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
       return;
     }
     _showIndicator(context);
-    saveData(start, end, memo, context);
+    // saveData(start, end, memo, context);
+    // final aa = await viewModel.saveData(start, end, memo, today, context);
+    if (await viewModel.saveData(start, end, memo, today, context)) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('SEED', end);
+      showSuccessAlert(context);
+    }else {
+      Alertable.showDataFailure(context);
+    }
   }
 
   void _showIndicator(BuildContext context) {
@@ -136,13 +166,13 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
     Navigator.pop(context);
   }
 
-  Widget renderButtonRow() {
+  Widget renderButtonRow(DiaryEditViewModel viewModel) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         // ElevatedButton(onPressed: () {}, child: Icon(Icons.image)),
         ElevatedButton(onPressed: () { clickCancel(context); }, child: Text("취소")),
-        ElevatedButton(onPressed: () { clickConfirm(context); }, child: Text("수정")),
+        ElevatedButton(onPressed: () { clickConfirm(context, viewModel); }, child: Text("수정")),
       ],
     );
   }
