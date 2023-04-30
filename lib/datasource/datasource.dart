@@ -75,4 +75,15 @@ class DataSource {
       print('FireStore에 데이터를 추가하는중 오류발생 :: ${e}');
     }
   }
+
+  Future<bool> removeData(String today) async {
+    String uuids = await StringUtils.getDevideUUID();
+    var collection = FirebaseFirestore.instance.collection(StringUtils.encrypt(uuids)).doc(today);
+    try {
+      collection.delete();
+      return true;
+    }catch (e) {
+      return false;
+    }
+  }
 }

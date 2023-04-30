@@ -188,6 +188,8 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
               Navigator.pop(context);
               if (await viewModel.removeAllData()) {
                 //성공?
+                prefs = await SharedPreferences.getInstance();
+                prefs.remove("SEED");
                 Alertable.showTitleAlert(context, "삭제되었습니다.");
               }else {
                 //실패

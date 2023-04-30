@@ -6,7 +6,7 @@
    <application
         android:label="coindiary"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/coind">
 
         <activity
             android:name=".MainActivity"

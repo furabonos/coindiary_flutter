@@ -25,4 +25,8 @@ class Repository {
   Future<bool> removeAllData() {
     return _dataSource.removeAllData();
   }
+
+  Future<bool> removeData(String today) {
+    return _dataSource.removeData(today);
+  }
 }

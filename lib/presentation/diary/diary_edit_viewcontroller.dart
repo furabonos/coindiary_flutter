@@ -81,6 +81,10 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
     );
   }
 
+  Future<void> clickDelete(BuildContext context, DiaryEditViewModel viewModel) async {
+    _showDeleteAlert(context, viewModel);
+  }
+
   Future<void> clickConfirm(BuildContext context, DiaryEditViewModel viewModel) async {
     final start = _startTextFieldController.text;
     final end = _endTextFieldController.text;
@@ -144,6 +148,45 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
     );
   }
 
+  void showDeleteAlert(BuildContext context) {
+    showCupertinoModalPopup<void>(
+      useRootNavigator: true,
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        content: Text('삭제되었습니다.'),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            isDestructiveAction: false,
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: const Text('확인'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void showDeleteFailAlert(BuildContext context) {
+    showCupertinoModalPopup<void>(
+      useRootNavigator: true,
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        content: Text('삭제에 실패하였습니다\n잠시후에 다시 시도해주세요.'),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            isDestructiveAction: false,
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('확인'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void saveData(String start, String end, String? memo, BuildContext context) async{
     String uuids = await StringUtils.getDevideUUID();
     try {
@@ -170,8 +213,8 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        // ElevatedButton(onPressed: () {}, child: Icon(Icons.image)),
         ElevatedButton(onPressed: () { clickCancel(context); }, child: Text("취소")),
+        ElevatedButton(onPressed: () { clickDelete(context, viewModel); }, child: Text('삭제')),
         ElevatedButton(onPressed: () { clickConfirm(context, viewModel); }, child: Text("수정")),
       ],
     );
@@ -287,4 +330,39 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
       ],
     );
   }
+
+  void _showDeleteAlert(BuildContext context, DiaryEditViewModel viewModel) {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        content: const Text('기록을 삭제 하시겠습니까?'),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('취소'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () async {
+              Navigator.pop(context);
+              if (await viewModel.removeData(_todayTextFieldController.text)) {
+                //성공
+                prefs = await SharedPreferences.getInstance();
+                prefs.remove("SEED");
+                showDeleteAlert(context);
+              }else {
+                //실패
+                showDeleteFailAlert(context);
+              }
+            },
+            child: const Text('확인'),
+          ),
+        ],
+      ),
+    );
+  }
+
+
 }

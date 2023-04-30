@@ -16,4 +16,9 @@ class DiaryEditViewModel extends ChangeNotifier {
     return _repository.saveData(start, end, memo, today, context);
   }
 
+  Future<bool> removeData(String today) async {
+    notifyListeners();
+    return _repository.removeData(today);
+  }
+
 }
