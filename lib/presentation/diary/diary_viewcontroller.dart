@@ -89,7 +89,7 @@ class _DiaryViewControllerState extends State<DiaryViewController> {
           //data null
           return Scaffold(
             body: Center(
-              child: CircularProgressIndicator(),
+
             ),
           );
         }

@@ -13,7 +13,7 @@ class DiaryEditViewModel extends ChangeNotifier {
 
   Future<bool> saveData(String start, String end, String? memo, String today, BuildContext context) async {
     notifyListeners();
-    return _repository.saveData(start, end, memo, today, context);
+    return _repository.saveData(start, end, memo, today, "", "", context);
   }
 
   Future<bool> removeData(String today) async {

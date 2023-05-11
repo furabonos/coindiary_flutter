@@ -7,21 +7,14 @@ class DiaryModel {
   final String start;
   final String end;
   final String? memo;
+  final String type;
+  final String register;
 
   DiaryModel.fromFirestore({required DocumentSnapshot doc}):
       today = doc['today'].toString(),
       start = doc['start'].toString(),
       end = doc['end'].toString(),
-      memo = doc['memo'].toString() ?? "";
-
-//   DiaryModel({
-//     required this.today,
-//     required this.start,
-//     required this.end,
-//     this.memo
-// });
-//   StatModel.fromJSON({required Map<String, dynamic> json}):
-//         daegu = double.parse(json['daegu'] ?? '0'),
-
-
+      memo = doc['memo'].toString() ?? "",
+      type = doc['type'].toString(),
+      register = ['register'].toString();
 }

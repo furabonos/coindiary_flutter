@@ -49,6 +49,7 @@ class _ChartViewControllerState extends State<ChartViewController> {
             ),
           );
         }
+        print("fksdlfklsfklds :: ${snapshot.data!.length.toString()}");
         return Column(
             children: [
               //Initialize the chart widget

@@ -9,6 +9,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:group_radio_button/group_radio_button.dart';
+import 'package:custom_radio_grouped_button/custom_radio_grouped_button.dart';
 
 typedef AlertAction = void Function(BuildContext);
 
@@ -29,6 +31,7 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
   bool _isLoading = false;
   String seed = "";
   late SharedPreferences prefs;
+  String types = "매매";
 
   @override
   initState() {
@@ -55,6 +58,7 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
   Widget build(BuildContext context) {
     var viewModel = context.watch<DiaryWriteViewModel>();
     _startTextFieldController.text = seed;
+
     return Scaffold(
       body: WillPopScope(
         onWillPop: () async{
@@ -74,7 +78,9 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
                     renderEndView(),
                     SizedBox(height: 20),
                     renderMemoView(),
-                    SizedBox(height: 100),
+                    SizedBox(height: 20),
+                    renderRadioButton(),
+                    SizedBox(height: 80),
                     renderButtonRow(viewModel),
                   ],
                 ),
@@ -104,7 +110,7 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
     _showIndicator(context);
     // saveData(start, end, memo, context);
     // final aa = await viewModel.saveData(start, end, memo, today, context);
-    if (await viewModel.saveData(start, end, memo, today, context)) {
+    if (await viewModel.saveData(start, end, memo, today, this.types, DateTime.now().toString(), context)) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString('SEED', end);
       showSuccessAlert(context);
@@ -150,6 +156,34 @@ class _DiaryWriteViewControllerState extends State<DiaryWriteViewController> {
           child: CircularProgressIndicator(),
         );
       },
+    );
+  }
+
+  CustomRadioButton renderRadioButton() {
+    return CustomRadioButton(
+      elevation: 0,
+      absoluteZeroSpacing: true,
+      unSelectedColor: Theme.of(context).canvasColor,
+      defaultSelected: "매매",
+      buttonLables: [
+        '매매',
+        '입금',
+        '출금',
+      ],
+      buttonValues: [
+        "매매",
+        "입금",
+        "출금",
+      ],
+      buttonTextStyle: ButtonTextStyle(
+          selectedColor: Colors.white,
+          unSelectedColor: Colors.black,
+          textStyle: TextStyle(fontSize: 16)),
+      radioButtonValue: (value) {
+        this.types = value;
+        print(this.types);
+      },
+      selectedColor: Theme.of(context).accentColor,
     );
   }
 
