@@ -33,7 +33,7 @@ class DataSource {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
     final QuerySnapshot snapshot = await firestore
         .collection(StringUtils.encrypt(uuids))
-        .orderBy('register', descending: false)
+        .orderBy('register', descending: true)
         .limit(1)
         .get();
 

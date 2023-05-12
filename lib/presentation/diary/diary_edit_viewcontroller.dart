@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coindiary_flutter/presentation/diary/viewmodel/diary_edit_viewmodel.dart';
+import 'package:custom_radio_grouped_button/custom_radio_grouped_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,6 +27,8 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
   bool _isLoading = false;
   String seed = "";
   late SharedPreferences prefs;
+  String types = "";
+  String registers = "";
 
   @override
   initState() {
@@ -47,6 +50,8 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
     _startTextFieldController.text = "${widget.modelData.start}";
     _endTextFieldController.text = "${widget.modelData.end}";
     _memoTextFieldController.text = "${widget.modelData.memo}";
+    types = widget.modelData.type;
+    registers = widget.modelData.register;
 
     var viewModel = context.watch<DiaryEditViewModel>();
 
@@ -69,7 +74,9 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
                     renderEndView(),
                     SizedBox(height: 20),
                     renderMemoView(),
-                    SizedBox(height: 100),
+                    SizedBox(height: 20),
+                    renderRadioButton(),
+                    SizedBox(height: 80),
                     renderButtonRow(viewModel),
                   ],
                 ),
@@ -101,9 +108,7 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
       return;
     }
     _showIndicator(context);
-    // saveData(start, end, memo, context);
-    // final aa = await viewModel.saveData(start, end, memo, today, context);
-    if (await viewModel.saveData(start, end, memo, today, context)) {
+    if (await viewModel.saveData(start, end, memo, today, this.types, widget.modelData.register, context)) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString('SEED', end);
       showSuccessAlert(context);
@@ -207,6 +212,34 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
 
   void clickCancel(BuildContext context) {
     Navigator.pop(context);
+  }
+
+  CustomRadioButton renderRadioButton() {
+    return CustomRadioButton(
+      elevation: 0,
+      absoluteZeroSpacing: true,
+      unSelectedColor: Theme.of(context).canvasColor,
+      defaultSelected: "${widget.modelData.type}",
+      buttonLables: [
+        '매매',
+        '입금',
+        '출금',
+      ],
+      buttonValues: [
+        "매매",
+        "입금",
+        "출금",
+      ],
+      buttonTextStyle: ButtonTextStyle(
+          selectedColor: Colors.white,
+          unSelectedColor: Colors.black,
+          textStyle: TextStyle(fontSize: 16)),
+      radioButtonValue: (value) {
+        this.types = value;
+        print(this.types);
+      },
+      selectedColor: Theme.of(context).accentColor,
+    );
   }
 
   Widget renderButtonRow(DiaryEditViewModel viewModel) {
@@ -347,7 +380,7 @@ class _DiaryEditViewControllerState extends State<DiaryEditViewController> {
             isDestructiveAction: true,
             onPressed: () async {
               Navigator.pop(context);
-              if (await viewModel.removeData(_todayTextFieldController.text)) {
+              if (await viewModel.removeData(widget.modelData.register)) {
                 //성공
                 prefs = await SharedPreferences.getInstance();
                 prefs.remove("SEED");

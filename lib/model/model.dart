@@ -16,5 +16,5 @@ class DiaryModel {
       end = doc['end'].toString(),
       memo = doc['memo'].toString() ?? "",
       type = doc['type'].toString(),
-      register = ['register'].toString();
+      register = doc['register'].toString();
 }
